@@ -1,0 +1,20 @@
+plugins {
+    id 'java'
+}
+
+group 'com.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.sun.net.httpserver:httpserver:20070405'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'SimpleWebServer'
+    }
+}
