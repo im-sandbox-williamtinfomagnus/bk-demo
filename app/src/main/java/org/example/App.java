@@ -21,7 +21,7 @@ public class App {
     private static final String DB_USER = "admin";
     private static final String DB_URL = "jdbc:mysql://localhost:3306/bank";
     public String getGreeting() {
-        return "Hello from App!";
+        return "Hello from App 234!";
     }
 
     // VULNERABILITY 2: SQL Injection vulnerability
