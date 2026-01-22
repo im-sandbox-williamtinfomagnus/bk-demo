@@ -1,0 +1,7 @@
+wnat to add the following: 
+
+x - block pushing to main directly. 
+x - have ot open pull request. 
+- pull requests needs to have the tests passing.
+- add an example for security scanning (unsafe code)
+- do not allow merge unsafe code (security scanning)
