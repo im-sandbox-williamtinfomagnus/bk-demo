@@ -46,3 +46,11 @@ application {
     // Define the main class for the application.
     mainClass = "org.example.App"
 }
+
+tasks.jar {
+    manifest {
+        attributes(
+            "Main-Class" to "org.example.App"
+        )
+    }
+}

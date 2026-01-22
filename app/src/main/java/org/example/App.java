@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 
 public class App {
     public String getGreeting() {
-        return "Hello from Karnataka Bank";
+        return "Hello from App!";
     }
 
     public static HttpServer createServer(int port) throws IOException {
