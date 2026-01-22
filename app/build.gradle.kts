@@ -19,6 +19,10 @@ repositories {
 dependencies {
     // This dependency is used by the application.
     implementation(libs.guava)
+    
+    // Deprecated library with known vulnerabilities for Dependabot testing
+    implementation("log4j:log4j:1.2.17")
+    implementation("commons-collections:commons-collections:3.2.1")
 }
 
 testing {
