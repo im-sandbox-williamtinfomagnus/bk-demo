@@ -1,5 +1,12 @@
+# Stage 1: Build
+FROM eclipse-temurin:25-jdk AS build
+WORKDIR /app
+COPY . .
+RUN ./gradlew build
+
+# Stage 2: Runtime
 FROM eclipse-temurin:25-jre
 WORKDIR /app
-COPY app/build/libs/app.jar app.jar
+COPY --from=build /app/app/build/libs/app.jar app.jar
 EXPOSE 8080
 CMD ["java", "-jar", "app.jar"]
