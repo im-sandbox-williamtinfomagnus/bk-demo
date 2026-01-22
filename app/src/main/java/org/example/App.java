@@ -10,10 +10,48 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 
 public class App {
+    // VULNERABILITY 1: Hardcoded credentials
+    private static final String DB_PASSWORD = "super_secret_password_123";
+    private static final String DB_USER = "admin";
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/bank";
     public String getGreeting() {
         return "Hello from App!";
+    }
+
+    // VULNERABILITY 2: SQL Injection vulnerability
+    public String getUserData(String username) {
+        try {
+            Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+            Statement stmt = conn.createStatement();
+            // SQL Injection vulnerability - user input directly concatenated
+            String query = "SELECT * FROM users WHERE username = '" + username + "'";
+            ResultSet rs = stmt.executeQuery(query);
+            
+            if (rs.next()) {
+                return rs.getString("data");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    // VULNERABILITY 3: Command Injection vulnerability
+    public String executeCommand(String userInput) {
+        try {
+            // Command injection vulnerability - unsanitized user input
+            Process process = Runtime.getRuntime().exec("ping " + userInput);
+            return "Command executed";
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "Error";
     }
 
     public static HttpServer createServer(int port) throws IOException {
