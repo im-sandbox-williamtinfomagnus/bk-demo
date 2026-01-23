@@ -16,11 +16,11 @@ jobs:
 
       - name: Run app
         run: |
-          docker run -d -p 8080:8080 --name demo demo-app
+          docker run -d -p 7070:7070 --name demo demo-app
           sleep 15
 
       - name: ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.15.0
         with:
-          target: http://localhost:8080
+          target: http://localhost:7070
           fail_action: false

@@ -58,12 +58,13 @@ public class App {
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/", new GreetingHandler());
         server.createContext("/insecure", new InsecureHandler());
+        server.createContext("/admin", new AdminHandler());
         server.setExecutor(null); // use the default executor
         return server;
     }
 
     public static void main(String[] args) throws Exception {
-        int port = args.length > 0 ? Integer.parseInt(args[0]) : 8080;
+        int port = args.length > 0 ? Integer.parseInt(args[0]) : 7070;
         HttpServer server = createServer(port);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> server.stop(0)));
 
@@ -125,6 +126,59 @@ public class App {
             // Only setting Content-Type, NO security headers
             exchange.getResponseHeaders().set("Content-Type", "text/html; charset=utf-8");
             
+            exchange.sendResponseHeaders(200, response.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(response);
+            }
+        }
+    }
+
+    // VULNERABILITY: Cookie Poisoning - Insecure session management
+    // The application trusts client-side cookie values without cryptographic signing or server-side validation
+    private static class AdminHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            // Get cookies from request
+            String cookieHeader = exchange.getRequestHeaders().getFirst("Cookie");
+            String userRole = "member"; // default role
+            
+            // Parse cookie to get user role
+            if (cookieHeader != null && cookieHeader.contains("user=")) {
+                int start = cookieHeader.indexOf("user=") + 5;
+                int end = cookieHeader.indexOf(";", start);
+                if (end == -1) end = cookieHeader.length();
+                userRole = cookieHeader.substring(start, end);
+            }
+            
+            String htmlResponse;
+            
+            // VULNERABILITY: Trusting client-side cookie without validation
+            // Attacker can change cookie from user=member to user=admin
+            if ("admin".equals(userRole)) {
+                htmlResponse = "<!DOCTYPE html><html><head><title>Admin Panel</title></head>" +
+                        "<body>" +
+                        "<h1>🔓 You are the admin!</h1>" +
+                        "<p>Welcome to the admin panel. You have full access.</p>" +
+                        "<p>Current cookie: user=" + userRole + "</p>" +
+                        "</body></html>";
+            } else {
+                htmlResponse = "<!DOCTYPE html><html><head><title>Access Denied</title></head>" +
+                        "<body>" +
+                        "<h1>❌ Access Denied</h1>" +
+                        "<p>You are not authorized to access this page.</p>" +
+                        "<p>Current cookie: user=" + userRole + "</p>" +
+                        "<p>Only admins can access this page.</p>" +
+                        "</body></html>";
+            }
+            
+            byte[] response = htmlResponse.getBytes(StandardCharsets.UTF_8);
+            
+            // Set default cookie if not present
+            if (cookieHeader == null || !cookieHeader.contains("user=")) {
+                exchange.getResponseHeaders().set("Set-Cookie", "user=member; Path=/");
+            }
+            
+            exchange.getResponseHeaders().set("Content-Type", "text/html; charset=utf-8");
             exchange.sendResponseHeaders(200, response.length);
             try (OutputStream os = exchange.getResponseBody()) {
                 os.write(response);

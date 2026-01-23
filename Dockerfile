@@ -8,5 +8,5 @@ RUN chmod +x ./gradlew && ./gradlew build
 FROM eclipse-temurin:25-jre
 WORKDIR /app
 COPY --from=build /app/app/build/libs/app.jar app.jar
-EXPOSE 8080
+EXPOSE 7070
 CMD ["java", "-jar", "app.jar"]

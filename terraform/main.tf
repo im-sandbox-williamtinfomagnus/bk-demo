@@ -18,8 +18,8 @@ resource "docker_container" "java_web" {
   image = docker_image.java_runtime.image_id
 
   ports {
-    internal = 8080
-    external = 8080
+    internal = 7070
+    external = 7070
   }
 
   command = [
