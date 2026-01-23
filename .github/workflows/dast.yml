@@ -1,0 +1,26 @@
+name: DAST Baseline Demo
+
+on:
+  workflow_dispatch:
+
+jobs:
+  dast:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build app
+        run: docker build -t demo-app .
+
+      - name: Run app
+        run: |
+          docker run -d -p 8080:8080 --name demo demo-app
+          sleep 15
+
+      - name: ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.4.0
+        with:
+          target: http://localhost:8080
+          fail_action: false

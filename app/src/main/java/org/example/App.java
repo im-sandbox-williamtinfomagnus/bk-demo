@@ -57,6 +57,7 @@ public class App {
     public static HttpServer createServer(int port) throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/", new GreetingHandler());
+        server.createContext("/insecure", new InsecureHandler());
         server.setExecutor(null); // use the default executor
         return server;
     }
@@ -78,6 +79,52 @@ public class App {
         public void handle(HttpExchange exchange) throws IOException {
             byte[] response = new App().getGreeting().getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
+            exchange.sendResponseHeaders(200, response.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(response);
+            }
+        }
+    }
+
+    // VULNERABILITY: Insecure endpoint with NO security headers, reflected XSS, and no input validation
+    private static class InsecureHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            // Get query parameter without any validation or sanitization
+            String query = exchange.getRequestURI().getQuery();
+            String userName = "Guest";
+            
+            if (query != null && query.contains("name=")) {
+                // Extract name parameter without sanitization - XSS vulnerability
+                userName = query.substring(query.indexOf("name=") + 5);
+                if (userName.contains("&")) {
+                    userName = userName.substring(0, userName.indexOf("&"));
+                }
+            }
+            
+            // NO SECURITY HEADERS - ZAP will flag these issues:
+            // - Missing X-Frame-Options (clickjacking protection)
+            // - Missing X-Content-Type-Options (MIME sniffing protection)
+            // - Missing Content-Security-Policy
+            // - Missing X-XSS-Protection
+            // - Missing Strict-Transport-Security (HSTS)
+            
+            // Reflected XSS vulnerability - user input directly in HTML response
+            String htmlResponse = "<!DOCTYPE html><html><head><title>Insecure Page</title></head>" +
+                    "<body>" +
+                    "<h1>Welcome " + userName + "!</h1>" +  // User input reflected without encoding
+                    "<p>This page has no security configuration.</p>" +
+                    "<form>" +
+                    "<input type='text' name='name' placeholder='Enter your name'>" +
+                    "<button type='submit'>Submit</button>" +
+                    "</form>" +
+                    "</body></html>";
+            
+            byte[] response = htmlResponse.getBytes(StandardCharsets.UTF_8);
+            
+            // Only setting Content-Type, NO security headers
+            exchange.getResponseHeaders().set("Content-Type", "text/html; charset=utf-8");
+            
             exchange.sendResponseHeaders(200, response.length);
             try (OutputStream os = exchange.getResponseBody()) {
                 os.write(response);
