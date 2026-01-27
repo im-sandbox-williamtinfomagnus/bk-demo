@@ -76,11 +76,26 @@ public class App {
         Thread.currentThread().join();
     }
 
+    // Utility method to add security headers to all responses
+    private static void addSecurityHeaders(HttpExchange exchange) {
+        exchange.getResponseHeaders().set("X-Content-Type-Options", "nosniff");
+        exchange.getResponseHeaders().set("X-Frame-Options", "DENY");
+        exchange.getResponseHeaders().set("X-XSS-Protection", "1; mode=block");
+        exchange.getResponseHeaders().set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+        exchange.getResponseHeaders().set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'");
+        exchange.getResponseHeaders().set("Cross-Origin-Opener-Policy", "same-origin");
+        exchange.getResponseHeaders().set("Cross-Origin-Embedder-Policy", "require-corp");
+        exchange.getResponseHeaders().set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+        exchange.getResponseHeaders().set("Pragma", "no-cache");
+        exchange.getResponseHeaders().set("Expires", "0");
+    }
+
     private static class GreetingHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             byte[] response = new App().getGreeting().getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
+            addSecurityHeaders(exchange);
             exchange.sendResponseHeaders(200, response.length);
             try (OutputStream os = exchange.getResponseBody()) {
                 os.write(response);
@@ -124,8 +139,9 @@ public class App {
             
             byte[] response = htmlResponse.getBytes(StandardCharsets.UTF_8);
             
-            // Only setting Content-Type, NO security headers
+            // Add security headers to prevent XSS and other attacks
             exchange.getResponseHeaders().set("Content-Type", "text/html; charset=utf-8");
+            addSecurityHeaders(exchange);
             
             exchange.sendResponseHeaders(200, response.length);
             try (OutputStream os = exchange.getResponseBody()) {
@@ -176,10 +192,11 @@ public class App {
             
             // Set default cookie if not present
             if (cookieHeader == null || !cookieHeader.contains("user=")) {
-                exchange.getResponseHeaders().set("Set-Cookie", "user=member; Path=/");
+                exchange.getResponseHeaders().set("Set-Cookie", "user=member; Path=/; HttpOnly; SameSite=Strict");
             }
             
             exchange.getResponseHeaders().set("Content-Type", "text/html; charset=utf-8");
+            addSecurityHeaders(exchange);
             exchange.sendResponseHeaders(200, response.length);
             try (OutputStream os = exchange.getResponseBody()) {
                 os.write(response);
@@ -209,6 +226,7 @@ public class App {
             
             // Return error details with 500 status code
             exchange.getResponseHeaders().set("Content-Type", "text/html; charset=utf-8");
+            addSecurityHeaders(exchange);
             exchange.sendResponseHeaders(500, response.length);
             try (OutputStream os = exchange.getResponseBody()) {
                 os.write(response);
