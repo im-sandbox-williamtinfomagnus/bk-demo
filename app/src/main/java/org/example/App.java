@@ -59,6 +59,7 @@ public class App {
         server.createContext("/", new GreetingHandler());
         server.createContext("/insecure", new InsecureHandler());
         server.createContext("/admin", new AdminHandler());
+        server.createContext("/error", new ErrorDisclosureHandler());
         server.setExecutor(null); // use the default executor
         return server;
     }
@@ -183,6 +184,116 @@ public class App {
             try (OutputStream os = exchange.getResponseBody()) {
                 os.write(response);
             }
+        }
+    }
+
+    // VULNERABILITY 4: Application Error Disclosure
+    // Exposes detailed error messages, stack traces, and internal application details
+    // This allows attackers to gather information about the application's technology stack,
+    // file paths, and internal workings, which can be used to craft targeted attacks
+    private static class ErrorDisclosureHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            String query = exchange.getRequestURI().getQuery();
+            String errorType = "generic";
+            
+            if (query != null && query.contains("type=")) {
+                errorType = query.substring(query.indexOf("type=") + 5);
+                if (errorType.contains("&")) {
+                    errorType = errorType.substring(0, errorType.indexOf("&"));
+                }
+            }
+            
+            String errorResponse = generateError(errorType);
+            byte[] response = errorResponse.getBytes(StandardCharsets.UTF_8);
+            
+            // Return error details with 500 status code
+            exchange.getResponseHeaders().set("Content-Type", "text/html; charset=utf-8");
+            exchange.sendResponseHeaders(500, response.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(response);
+            }
+        }
+        
+        private String generateError(String errorType) {
+            StringBuilder errorHtml = new StringBuilder();
+            errorHtml.append("<!DOCTYPE html><html><head><title>Application Error</title>");
+            errorHtml.append("<style>body{font-family:monospace;background:#f8d7da;padding:20px;}");
+            errorHtml.append(".error-box{background:#fff;border:2px solid #721c24;padding:20px;margin:10px;}</style>");
+            errorHtml.append("</head><body>");
+            errorHtml.append("<h1>⚠️ Application Error</h1>");
+            errorHtml.append("<div class='error-box'>");
+            
+            try {
+                switch (errorType) {
+                    case "database":
+                        // Trigger a database error and expose the stack trace
+                        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/nonexistent", "admin", DB_PASSWORD);
+                        break;
+                    case "nullpointer":
+                        // Trigger a NullPointerException
+                        String nullString = null;
+                        nullString.length();
+                        break;
+                    case "arrayindex":
+                        // Trigger an ArrayIndexOutOfBoundsException
+                        int[] array = new int[5];
+                        int value = array[10];
+                        break;
+                    case "divide":
+                        // Trigger an ArithmeticException
+                        int result = 10 / 0;
+                        break;
+                    default:
+                        // Generic error with full stack trace
+                        throw new RuntimeException("Simulated application error for testing purposes");
+                }
+            } catch (Exception e) {
+                // VULNERABILITY: Exposing detailed error information
+                errorHtml.append("<h2>Error Type: ").append(e.getClass().getName()).append("</h2>");
+                errorHtml.append("<h3>Error Message:</h3>");
+                errorHtml.append("<p><strong>").append(e.getMessage()).append("</strong></p>");
+                
+                // Expose full stack trace - major security issue
+                errorHtml.append("<h3>Stack Trace:</h3>");
+                errorHtml.append("<pre style='background:#f5f5f5;padding:10px;overflow:auto;'>");
+                for (StackTraceElement element : e.getStackTrace()) {
+                    errorHtml.append("at ").append(element.toString()).append("\n");
+                }
+                errorHtml.append("</pre>");
+                
+                // Expose system information
+                errorHtml.append("<h3>System Information:</h3>");
+                errorHtml.append("<ul>");
+                errorHtml.append("<li><strong>Java Version:</strong> ").append(System.getProperty("java.version")).append("</li>");
+                errorHtml.append("<li><strong>Java Vendor:</strong> ").append(System.getProperty("java.vendor")).append("</li>");
+                errorHtml.append("<li><strong>OS Name:</strong> ").append(System.getProperty("os.name")).append("</li>");
+                errorHtml.append("<li><strong>OS Version:</strong> ").append(System.getProperty("os.version")).append("</li>");
+                errorHtml.append("<li><strong>User Home:</strong> ").append(System.getProperty("user.home")).append("</li>");
+                errorHtml.append("<li><strong>User Dir:</strong> ").append(System.getProperty("user.dir")).append("</li>");
+                errorHtml.append("</ul>");
+                
+                // Expose application internals
+                if (e.getCause() != null) {
+                    errorHtml.append("<h3>Caused By:</h3>");
+                    errorHtml.append("<p>").append(e.getCause().toString()).append("</p>");
+                }
+            }
+            
+            errorHtml.append("</div>");
+            errorHtml.append("<div class='error-box'>");
+            errorHtml.append("<h3>Test Different Error Types:</h3>");
+            errorHtml.append("<ul>");
+            errorHtml.append("<li><a href='/error?type=database'>Database Connection Error</a></li>");
+            errorHtml.append("<li><a href='/error?type=nullpointer'>Null Pointer Exception</a></li>");
+            errorHtml.append("<li><a href='/error?type=arrayindex'>Array Index Out of Bounds</a></li>");
+            errorHtml.append("<li><a href='/error?type=divide'>Arithmetic Exception (Division by Zero)</a></li>");
+            errorHtml.append("<li><a href='/error?type=generic'>Generic Runtime Exception</a></li>");
+            errorHtml.append("</ul>");
+            errorHtml.append("</div>");
+            errorHtml.append("</body></html>");
+            
+            return errorHtml.toString();
         }
     }
 }
