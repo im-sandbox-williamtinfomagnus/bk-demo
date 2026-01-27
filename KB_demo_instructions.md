@@ -100,7 +100,7 @@ gh workflow run infrastructure-deploy.yml --field environment=staging
 ### Talking Points:
 - ✅ **Single pipeline** for infrastructure changes
 - ✅ **Automated compliance checks** before deployment
-- ✅ **Audit trail** of all infrastructure changes
+- ✅ **Audit trailges** of all infrastructure chan
 - ✅ **No separate Jenkins/GitLab CI** required
 
 ---

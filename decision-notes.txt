@@ -1,0 +1,14 @@
+https://github.com/actions/dependency-review-action
+
+I'm not sure if this is official from GitHub, but it uses GHAS in the backend.
+
+Looks like there is this as well, from GitHub official docs:
+https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/manage-your-dependency-security/configuring-the-dependency-review-action
+
+Ohhh apparently it's the same.
+
+The action uses the endpoint. So maybe I can make a demo of the endpoint as well:
+REST API endpoints for dependency review
+https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/manage-your-dependency-security/configuring-the-dependency-review-action
+
+

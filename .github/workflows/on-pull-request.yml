@@ -1,0 +1,149 @@
+name: Security Scan on Pull Request
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+  pull-requests: write
+
+jobs:
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      - name: Build Docker image
+        run: docker build -t demo-app .
+
+      - name: Save Docker image
+        run: docker save demo-app -o demo-app.tar
+
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-app
+          path: demo-app.tar
+          retention-days: 1
+
+  dependency-scan:
+    name: Dependency Vulnerability Scan (SCA)
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
+          deny-licenses: GPL-2.0, LGPL-2.0
+          comment-summary-in-pr: always
+
+  zap-scan:
+    name: OWASP ZAP Security Scan (DAST)
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Docker image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: demo-app
+
+      - name: Load Docker image
+        run: docker load -i demo-app.tar
+
+      - name: Run application container
+        run: |
+          docker run -d -p 7070:7070 --name demo demo-app
+          sleep 15
+
+      - name: Verify application is running
+        run: |
+          curl -f http://localhost:7070/ || exit 1
+
+      - name: Create ZAP context file
+        run: |
+          mkdir -p zap-config
+          cat > zap-config/urls.txt << 'EOF'
+          http://localhost:7070/
+          http://localhost:7070/insecure
+          http://localhost:7070/admin
+          http://localhost:7070/error
+          http://localhost:7070/error?type=database
+          http://localhost:7070/error?type=nullpointer
+          http://localhost:7070/error?type=arrayindex
+          http://localhost:7070/error?type=divide
+          http://localhost:7070/error?type=generic
+          EOF
+
+      - name: Run ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.15.0
+        with:
+          target: http://localhost:7070
+          fail_action: true
+          cmd_options: '-a -j -U zap-config/urls.txt'
+
+      - name: Upload ZAP Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-report
+          path: |
+            report_html.html
+            report_json.json
+            report_md.md
+
+  security-gate:
+    name: Security Gate - Block on Vulnerabilities
+    runs-on: ubuntu-latest
+    needs: [dependency-scan, zap-scan]
+    if: always()
+    
+    steps:
+      - name: Check security scan results
+        run: |
+          echo "Checking security scan results..."
+          
+          DEPENDENCY_RESULT="${{ needs.dependency-scan.result }}"
+          ZAP_RESULT="${{ needs.zap-scan.result }}"
+          
+          echo "Dependency Scan: $DEPENDENCY_RESULT"
+          echo "ZAP Scan: $ZAP_RESULT"
+          
+          if [ "$DEPENDENCY_RESULT" != "success" ] || [ "$ZAP_RESULT" != "success" ]; then
+            echo "❌ Security vulnerabilities detected! PR is blocked."
+            echo ""
+            echo "Failed checks:"
+            [ "$DEPENDENCY_RESULT" != "success" ] && echo "  - Dependency vulnerabilities found"
+            [ "$ZAP_RESULT" != "success" ] && echo "  - ZAP security issues found"
+            echo ""
+            echo "Please review the security scan results and fix all vulnerabilities before merging."
+            exit 1
+          fi
+          
+          echo "✅ All security scans passed! PR is safe to merge." 
