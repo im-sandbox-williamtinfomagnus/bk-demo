@@ -45,4 +45,4 @@ jobs:
         with:
           target: http://localhost:7070
           fail_action: true
-          cmd_options: '-a -J -u zap-config/urls.txt'
+          cmd_options: '-a -J -u zap-config/urls.txt -c zap.config'
