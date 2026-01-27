@@ -1,4 +1,5 @@
 Bhaskar: 
 IAST
-SAST
-x DAST
+x SCA (dependabot)
+SAST (codeql)
+x DAST (ZAP)

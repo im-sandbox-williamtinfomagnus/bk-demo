@@ -2,13 +2,6 @@ name: "SAST (CodeQL)"
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-  schedule:
-    # Run daily at 06:00 UTC to keep SAST findings fresh
-    - cron: '0 6 * * *'
 
 jobs:
   analyze:

@@ -44,7 +44,7 @@ jobs:
           path: demo-app.tar
           retention-days: 1
 
-  dependency-scan:
+  sca-scan:
     name: Dependency Vulnerability Scan (SCA)
     runs-on: ubuntu-latest
     needs: build
@@ -60,7 +60,7 @@ jobs:
           deny-licenses: GPL-2.0, LGPL-2.0
           comment-summary-in-pr: always
 
-  zap-scan:
+  dast-scan:
     name: OWASP ZAP Security Scan (DAST)
     runs-on: ubuntu-latest
     needs: build
