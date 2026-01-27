@@ -1,0 +1,224 @@
+env:
+  contexts:
+  - excludePaths: []
+    name: baseline
+    urls:
+    - http://host.docker.internal:7070
+  parameters:
+    failOnError: true
+    progressToStdout: false
+jobs:
+- parameters:
+    enableTags: false
+    maxAlertsPerRule: 10
+  type: passiveScan-config
+- parameters:
+    maxDuration: 1
+    url: http://host.docker.internal:7070
+  type: spider
+- parameters:
+    maxDuration: 0
+  type: passiveScan-wait
+- parameters:
+    format: Long
+    summaryFile: /home/zap/zap_out.json
+  rules:
+  - action: IGNORE
+    customMessage: ''
+    id: 10003
+  - action: IGNORE
+    customMessage: ''
+    id: 10009
+  - action: IGNORE
+    customMessage: ''
+    id: 10010
+  - action: IGNORE
+    customMessage: ''
+    id: 10011
+  - action: IGNORE
+    customMessage: ''
+    id: 10015
+  - action: IGNORE
+    customMessage: ''
+    id: 10017
+  - action: IGNORE
+    customMessage: ''
+    id: 10019
+  - action: IGNORE
+    customMessage: ''
+    id: 10020
+  - action: IGNORE
+    customMessage: ''
+    id: 10021
+  - action: IGNORE
+    customMessage: ''
+    id: 10023
+  - action: IGNORE
+    customMessage: ''
+    id: 10024
+  - action: IGNORE
+    customMessage: ''
+    id: 10025
+  - action: IGNORE
+    customMessage: ''
+    id: 10026
+  - action: IGNORE
+    customMessage: ''
+    id: 10027
+  - action: IGNORE
+    customMessage: ''
+    id: 10028
+  - action: IGNORE
+    customMessage: ''
+    id: 10029
+  - action: IGNORE
+    customMessage: ''
+    id: 10030
+  - action: IGNORE
+    customMessage: ''
+    id: 10031
+  - action: IGNORE
+    customMessage: ''
+    id: 10032
+  - action: IGNORE
+    customMessage: ''
+    id: 10033
+  - action: IGNORE
+    customMessage: ''
+    id: 10034
+  - action: IGNORE
+    customMessage: ''
+    id: 10035
+  - action: IGNORE
+    customMessage: ''
+    id: 10036
+  - action: IGNORE
+    customMessage: ''
+    id: 10037
+  - action: IGNORE
+    customMessage: ''
+    id: 10038
+  - action: IGNORE
+    customMessage: ''
+    id: 10039
+  - action: IGNORE
+    customMessage: ''
+    id: 10040
+  - action: IGNORE
+    customMessage: ''
+    id: 10041
+  - action: IGNORE
+    customMessage: ''
+    id: 10042
+  - action: IGNORE
+    customMessage: ''
+    id: 10043
+  - action: IGNORE
+    customMessage: ''
+    id: 10044
+  - action: IGNORE
+    customMessage: ''
+    id: 10049
+  - action: IGNORE
+    customMessage: ''
+    id: 10050
+  - action: IGNORE
+    customMessage: ''
+    id: 10052
+  - action: IGNORE
+    customMessage: ''
+    id: 10054
+  - action: IGNORE
+    customMessage: ''
+    id: 10055
+  - action: IGNORE
+    customMessage: ''
+    id: 10056
+  - action: IGNORE
+    customMessage: ''
+    id: 10057
+  - action: IGNORE
+    customMessage: ''
+    id: 10061
+  - action: IGNORE
+    customMessage: ''
+    id: 10062
+  - action: IGNORE
+    customMessage: ''
+    id: 10063
+  - action: IGNORE
+    customMessage: ''
+    id: 10096
+  - action: IGNORE
+    customMessage: ''
+    id: 10097
+  - action: IGNORE
+    customMessage: ''
+    id: 10098
+  - action: IGNORE
+    customMessage: ''
+    id: 10099
+  - action: IGNORE
+    customMessage: ''
+    id: 10105
+  - action: IGNORE
+    customMessage: ''
+    id: 10108
+  - action: IGNORE
+    customMessage: ''
+    id: 10109
+  - action: IGNORE
+    customMessage: ''
+    id: 10110
+  - action: IGNORE
+    customMessage: ''
+    id: 10111
+  - action: IGNORE
+    customMessage: ''
+    id: 10112
+  - action: IGNORE
+    customMessage: ''
+    id: 10113
+  - action: IGNORE
+    customMessage: ''
+    id: 10115
+  - action: IGNORE
+    customMessage: ''
+    id: 10116
+  - action: IGNORE
+    customMessage: ''
+    id: 10202
+  - action: IGNORE
+    customMessage: ''
+    id: 2
+  - action: IGNORE
+    customMessage: ''
+    id: 3
+  - action: IGNORE
+    customMessage: ''
+    id: 50001
+  - action: IGNORE
+    customMessage: ''
+    id: 90001
+  - action: IGNORE
+    customMessage: ''
+    id: 90002
+  - action: IGNORE
+    customMessage: ''
+    id: 90003
+  - action: IGNORE
+    customMessage: ''
+    id: 90004
+  - action: IGNORE
+    customMessage: ''
+    id: 90011
+  - action: IGNORE
+    customMessage: ''
+    id: 90022
+  - action: IGNORE
+    customMessage: ''
+    id: 90030
+  - action: IGNORE
+    customMessage: ''
+    id: 90033
+  type: outputSummary

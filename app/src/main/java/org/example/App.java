@@ -59,9 +59,6 @@ public class App {
         server.createContext("/", new GreetingHandler());
         server.createContext("/robots.txt", new RobotsHandler());
         server.createContext("/sitemap.xml", new SitemapHandler());
-        server.createContext("/insecure", new InsecureHandler());
-        server.createContext("/admin", new AdminHandler());
-        server.createContext("/error", new ErrorDisclosureHandler());
         server.setExecutor(null); // use the default executor
         return server;
     }
@@ -131,14 +128,19 @@ public class App {
             // - Missing Strict-Transport-Security (HSTS)
             
             // Reflected XSS vulnerability - user input directly in HTML response
-            String htmlResponse = "<!DOCTYPE html><html><head><title>Insecure Page</title></head>" +
+                String htmlResponse = "<!DOCTYPE html><html><head><title>Insecure Page</title></head>" +
                     "<body>" +
-                    "<h1>Welcome " + userName + "!</h1>" +  // User input reflected without encoding
+                    "<h1>Welcome " + userName + "!</h1>" +
                     "<p>This page has no security configuration.</p>" +
                     "<form>" +
                     "<input type='text' name='name' placeholder='Enter your name'>" +
                     "<button type='submit'>Submit</button>" +
                     "</form>" +
+                    "<script>" +
+                    "eval('console.log(\"ZAP-10110: eval used\")');" +
+                    "setTimeout('console.log(\"ZAP-10110: string timeout\")', 100);" +
+                    "document.write(\"<p>Dynamic content via document.write</p>\");" +
+                    "</script>" +
                     "</body></html>";
             
             byte[] response = htmlResponse.getBytes(StandardCharsets.UTF_8);
@@ -150,6 +152,8 @@ public class App {
             exchange.getResponseHeaders().set("Pragma", "no-cache");
             exchange.getResponseHeaders().set("Expires", "0");
             addSecurityHeaders(exchange);
+            // Allow inline scripts on this insecure page to ensure ZAP detects dangerous JS functions
+            exchange.getResponseHeaders().set("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'");
             
             exchange.sendResponseHeaders(200, response.length);
             try (OutputStream os = exchange.getResponseBody()) {
@@ -336,9 +340,6 @@ public class App {
         public void handle(HttpExchange exchange) throws IOException {
             String robotsContent = "User-agent: *\n" +
                     "Allow: /\n" +
-                    "Disallow: /admin\n" +
-                    "Disallow: /error\n" +
-                    "Disallow: /insecure\n" +
                     "\n" +
                     "Sitemap: http://localhost:7070/sitemap.xml\n";
             
@@ -365,12 +366,6 @@ public class App {
                     "    <lastmod>2026-01-27</lastmod>\n" +
                     "    <changefreq>daily</changefreq>\n" +
                     "    <priority>1.0</priority>\n" +
-                    "  </url>\n" +
-                    "  <url>\n" +
-                    "    <loc>http://localhost:7070/insecure</loc>\n" +
-                    "    <lastmod>2026-01-27</lastmod>\n" +
-                    "    <changefreq>weekly</changefreq>\n" +
-                    "    <priority>0.5</priority>\n" +
                     "  </url>\n" +
                     "</urlset>";
             
