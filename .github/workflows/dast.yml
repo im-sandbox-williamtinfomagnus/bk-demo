@@ -34,9 +34,15 @@ jobs:
           http://localhost:7070/error?type=generic
           EOF
 
+      - name: Display ZAP URLs
+        run: |
+          echo "URLs to be scanned by ZAP:"
+          cat zap-config/urls.txt
+
+
       - name: ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.15.0
         with:
           target: http://localhost:7070
           fail_action: true
-          cmd_options: '-a -j -U zap-config/urls.txt'
+          cmd_options: '-a -J -u zap-config/urls.txt'
