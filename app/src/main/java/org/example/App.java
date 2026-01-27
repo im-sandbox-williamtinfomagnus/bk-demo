@@ -57,6 +57,8 @@ public class App {
     public static HttpServer createServer(int port) throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/", new GreetingHandler());
+        server.createContext("/robots.txt", new RobotsHandler());
+        server.createContext("/sitemap.xml", new SitemapHandler());
         server.createContext("/insecure", new InsecureHandler());
         server.createContext("/admin", new AdminHandler());
         server.createContext("/error", new ErrorDisclosureHandler());
@@ -85,9 +87,7 @@ public class App {
         exchange.getResponseHeaders().set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'");
         exchange.getResponseHeaders().set("Cross-Origin-Opener-Policy", "same-origin");
         exchange.getResponseHeaders().set("Cross-Origin-Embedder-Policy", "require-corp");
-        exchange.getResponseHeaders().set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
-        exchange.getResponseHeaders().set("Pragma", "no-cache");
-        exchange.getResponseHeaders().set("Expires", "0");
+        // Cache headers will be set per-endpoint to avoid 'Non-Storable Content' warnings on static files
     }
 
     private static class GreetingHandler implements HttpHandler {
@@ -95,6 +95,10 @@ public class App {
         public void handle(HttpExchange exchange) throws IOException {
             byte[] response = new App().getGreeting().getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
+            // Dynamic content should not be cached
+            exchange.getResponseHeaders().set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+            exchange.getResponseHeaders().set("Pragma", "no-cache");
+            exchange.getResponseHeaders().set("Expires", "0");
             addSecurityHeaders(exchange);
             exchange.sendResponseHeaders(200, response.length);
             try (OutputStream os = exchange.getResponseBody()) {
@@ -141,6 +145,10 @@ public class App {
             
             // Add security headers to prevent XSS and other attacks
             exchange.getResponseHeaders().set("Content-Type", "text/html; charset=utf-8");
+            // Dynamic page, do not cache
+            exchange.getResponseHeaders().set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+            exchange.getResponseHeaders().set("Pragma", "no-cache");
+            exchange.getResponseHeaders().set("Expires", "0");
             addSecurityHeaders(exchange);
             
             exchange.sendResponseHeaders(200, response.length);
@@ -196,6 +204,10 @@ public class App {
             }
             
             exchange.getResponseHeaders().set("Content-Type", "text/html; charset=utf-8");
+            // Sensitive admin page, do not cache
+            exchange.getResponseHeaders().set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+            exchange.getResponseHeaders().set("Pragma", "no-cache");
+            exchange.getResponseHeaders().set("Expires", "0");
             addSecurityHeaders(exchange);
             exchange.sendResponseHeaders(200, response.length);
             try (OutputStream os = exchange.getResponseBody()) {
@@ -226,6 +238,10 @@ public class App {
             
             // Return error details with 500 status code
             exchange.getResponseHeaders().set("Content-Type", "text/html; charset=utf-8");
+            // Error responses should not be cached
+            exchange.getResponseHeaders().set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+            exchange.getResponseHeaders().set("Pragma", "no-cache");
+            exchange.getResponseHeaders().set("Expires", "0");
             addSecurityHeaders(exchange);
             exchange.sendResponseHeaders(500, response.length);
             try (OutputStream os = exchange.getResponseBody()) {
@@ -312,6 +328,61 @@ public class App {
             errorHtml.append("</body></html>");
             
             return errorHtml.toString();
+        }
+    }
+    // Handler for robots.txt
+    private static class RobotsHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            String robotsContent = "User-agent: *\n" +
+                    "Allow: /\n" +
+                    "Disallow: /admin\n" +
+                    "Disallow: /error\n" +
+                    "Disallow: /insecure\n" +
+                    "\n" +
+                    "Sitemap: http://localhost:7070/sitemap.xml\n";
+            
+            byte[] response = robotsContent.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
+            // Static asset: safe to cache for a day
+            exchange.getResponseHeaders().set("Cache-Control", "public, max-age=86400, immutable");
+            addSecurityHeaders(exchange);
+            exchange.sendResponseHeaders(200, response.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(response);
+            }
+        }
+    }
+
+    // Handler for sitemap.xml
+    private static class SitemapHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            String sitemapContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                    "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
+                    "  <url>\n" +
+                    "    <loc>http://localhost:7070/</loc>\n" +
+                    "    <lastmod>2026-01-27</lastmod>\n" +
+                    "    <changefreq>daily</changefreq>\n" +
+                    "    <priority>1.0</priority>\n" +
+                    "  </url>\n" +
+                    "  <url>\n" +
+                    "    <loc>http://localhost:7070/insecure</loc>\n" +
+                    "    <lastmod>2026-01-27</lastmod>\n" +
+                    "    <changefreq>weekly</changefreq>\n" +
+                    "    <priority>0.5</priority>\n" +
+                    "  </url>\n" +
+                    "</urlset>";
+            
+            byte[] response = sitemapContent.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/xml; charset=utf-8");
+            // Static asset: cache for an hour to allow updates
+            exchange.getResponseHeaders().set("Cache-Control", "public, max-age=3600");
+            addSecurityHeaders(exchange);
+            exchange.sendResponseHeaders(200, response.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(response);
+            }
         }
     }
 }
