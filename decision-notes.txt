@@ -1,3 +1,5 @@
+------ tool for SCA
+
 https://github.com/actions/dependency-review-action
 
 I'm not sure if this is official from GitHub, but it uses GHAS in the backend.
@@ -11,4 +13,12 @@ The action uses the endpoint. So maybe I can make a demo of the endpoint as well
 REST API endpoints for dependency review
 https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/manage-your-dependency-security/configuring-the-dependency-review-action
 
+
+
+
+------ configuration
+
+You can configure your pull requests with this one:
+Require code scanning results
+And set up the code scanning results direclty on GitHub.
 

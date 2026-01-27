@@ -117,33 +117,3 @@ jobs:
             report_html.html
             report_json.json
             report_md.md
-
-  security-gate:
-    name: Security Gate - Block on Vulnerabilities
-    runs-on: ubuntu-latest
-    needs: [dependency-scan, zap-scan]
-    if: always()
-    
-    steps:
-      - name: Check security scan results
-        run: |
-          echo "Checking security scan results..."
-          
-          DEPENDENCY_RESULT="${{ needs.dependency-scan.result }}"
-          ZAP_RESULT="${{ needs.zap-scan.result }}"
-          
-          echo "Dependency Scan: $DEPENDENCY_RESULT"
-          echo "ZAP Scan: $ZAP_RESULT"
-          
-          if [ "$DEPENDENCY_RESULT" != "success" ] || [ "$ZAP_RESULT" != "success" ]; then
-            echo "❌ Security vulnerabilities detected! PR is blocked."
-            echo ""
-            echo "Failed checks:"
-            [ "$DEPENDENCY_RESULT" != "success" ] && echo "  - Dependency vulnerabilities found"
-            [ "$ZAP_RESULT" != "success" ] && echo "  - ZAP security issues found"
-            echo ""
-            echo "Please review the security scan results and fix all vulnerabilities before merging."
-            exit 1
-          fi
-          
-          echo "✅ All security scans passed! PR is safe to merge." 
