@@ -19,9 +19,24 @@ jobs:
           docker run -d -p 7070:7070 --name demo demo-app
           sleep 15
 
+      - name: Create ZAP context file
+        run: |
+          mkdir -p zap-config
+          cat > zap-config/urls.txt << 'EOF'
+          http://localhost:7070/
+          http://localhost:7070/insecure
+          http://localhost:7070/admin
+          http://localhost:7070/error
+          http://localhost:7070/error?type=database
+          http://localhost:7070/error?type=nullpointer
+          http://localhost:7070/error?type=arrayindex
+          http://localhost:7070/error?type=divide
+          http://localhost:7070/error?type=generic
+          EOF
+
       - name: ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.15.0
         with:
           target: http://localhost:7070
           fail_action: true
-          cmd_options: '-a'
+          cmd_options: '-a -j -U zap-config/urls.txt'
