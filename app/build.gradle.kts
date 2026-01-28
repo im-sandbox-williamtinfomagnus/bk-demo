@@ -24,6 +24,9 @@ dependencies {
     implementation("log4j:log4j:1.2.17")
     implementation("commons-collections:commons-collections:3.2.1")
     implementation("org.apache.struts:struts2-core:2.3.15.1")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.9.8")
+    implementation("org.yaml:snakeyaml:1.18")
+    implementation("com.thoughtworks.xstream:xstream:1.4.9")
 }
 
 testing {
