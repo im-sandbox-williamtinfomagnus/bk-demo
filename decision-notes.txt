@@ -13,7 +13,8 @@ The action uses the endpoint. So maybe I can make a demo of the endpoint as well
 REST API endpoints for dependency review
 https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/manage-your-dependency-security/configuring-the-dependency-review-action
 
-
+** it looks like java is not supported by the GH Action
+** so that's why I added a package.json, and it is detected correctly.
 
 
 ------ configuration
