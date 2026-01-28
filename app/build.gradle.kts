@@ -20,9 +20,10 @@ dependencies {
     // This dependency is used by the application.
     implementation(libs.guava)
     
-    // Deprecated library with known vulnerabilities for Dependabot testing
+    // Deprecated libraries with known vulnerabilities for SCA testing
     implementation("log4j:log4j:1.2.17")
     implementation("commons-collections:commons-collections:3.2.1")
+    implementation("org.apache.struts:struts2-core:2.3.15.1")
 }
 
 testing {
