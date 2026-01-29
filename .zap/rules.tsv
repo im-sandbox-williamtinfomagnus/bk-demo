@@ -68,3 +68,5 @@
 90022	IGNORE	(Application Error Disclosure)
 90030	IGNORE	(WSDL File Detection)
 90033	IGNORE	(Loosely Scoped Cookie)
+10049	IGNORE	(Non-Storable Content)
+90005	IGNORE	(Sec-Fetch-Dest Header is Missing)

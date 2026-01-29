@@ -27,5 +27,5 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           target: http://localhost:7070
           fail_action: true
-          cmd_options: '-a -J'
+          cmd_options: '-a'
           rules_file_name: '.zap/rules.tsv'
