@@ -24,6 +24,7 @@ jobs:
       - name: ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.15.0
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           target: http://localhost:7070
           fail_action: true
           cmd_options: '-a -J'
