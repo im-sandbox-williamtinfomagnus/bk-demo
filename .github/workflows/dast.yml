@@ -2,7 +2,9 @@ name: DAST Baseline Demo
 
 on:
   workflow_dispatch:
-
+  push:
+    branches:
+      - main
 jobs:
   dast:
     runs-on: ubuntu-latest
@@ -19,31 +21,11 @@ jobs:
           docker run -d -p 7070:7070 --name demo demo-app
           sleep 15
 
-      - name: Create ZAP context file
-        run: |
-          mkdir -p zap-config
-          cat > zap-config/urls.txt << 'EOF'
-          http://localhost:7070/
-          http://localhost:7070/insecure
-          http://localhost:7070/admin
-          http://localhost:7070/error
-          http://localhost:7070/error?type=database
-          http://localhost:7070/error?type=nullpointer
-          http://localhost:7070/error?type=arrayindex
-          http://localhost:7070/error?type=divide
-          http://localhost:7070/error?type=generic
-          EOF
-
-      - name: Display ZAP URLs
-        run: |
-          echo "URLs to be scanned by ZAP:"
-          cat zap-config/urls.txt
-
-
       - name: ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.15.0
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           target: http://localhost:7070
           fail_action: true
-          cmd_options: '-a -J -u zap-config/urls.txt'
+          cmd_options: '-a'
           rules_file_name: '.zap/rules.tsv'
