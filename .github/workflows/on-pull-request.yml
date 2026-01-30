@@ -61,64 +61,25 @@ jobs:
           comment-summary-in-pr: always
 
   dast-scan:
-    name: OWASP ZAP Security Scan (DAST)
     runs-on: ubuntu-latest
-    needs: build
-    
+
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download Docker image artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: demo-app
+      - name: Build app
+        run: docker build -t demo-app .
 
-      - name: Load Docker image
-        run: docker load -i demo-app.tar
-
-      - name: Run application container
+      - name: Run app
         run: |
           docker run -d -p 7070:7070 --name demo demo-app
           sleep 15
 
-      - name: Verify application is running
-        run: |
-          curl -f http://localhost:7070/ || exit 1
-
-      - name: Create ZAP context file
-        run: |
-          mkdir -p zap-config
-          cat > zap-config/urls.txt << 'EOF'
-          http://localhost:7070/
-          http://localhost:7070/insecure
-          http://localhost:7070/admin
-          http://localhost:7070/error
-          http://localhost:7070/error?type=database
-          http://localhost:7070/error?type=nullpointer
-          http://localhost:7070/error?type=arrayindex
-          http://localhost:7070/error?type=divide
-          http://localhost:7070/error?type=generic
-          EOF
-
-      - name: Display ZAP URLs
-        run: |
-          echo "URLs to be scanned by ZAP:"
-          cat zap-config/urls.txt
-
-      - name: Run ZAP Baseline Scan
+      - name: ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.15.0
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           target: http://localhost:7070
           fail_action: true
-          cmd_options: '-a -J -u zap-config/urls.txt'
-
-      - name: Upload ZAP Report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: zap-report
-          path: |
-            report_html.html
-            report_json.json
-            report_md.md
+          cmd_options: '-a'
+          rules_file_name: '.zap/rules.tsv'
