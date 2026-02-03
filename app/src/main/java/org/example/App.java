@@ -95,6 +95,10 @@ public class App {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             byte[] response = new App().getGreeting().getBytes(StandardCharsets.UTF_8);
+            
+            // VULNERABILITY: Set landing page cookie without SameSite attribute
+            exchange.getResponseHeaders().add("Set-Cookie", "landingVisit=true; Path=/; Max-Age=3600");
+            
             exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
             // Dynamic content should not be cached
             exchange.getResponseHeaders().set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
