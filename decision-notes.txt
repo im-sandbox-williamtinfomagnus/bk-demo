@@ -22,3 +22,20 @@ You can configure your pull requests with this one:
 Require code scanning results
 And set up the code scanning results direclty on GitHub.
 
+
+------ tool for DAST
+
+to run DAST locally (which can be useful, instead of having to run on GitHub Actions everytime)...
+do the following:
+
+docker 
+
+gradlew.bat build
+gradlew.bat run
+
+run on powershell:
+docker run --rm -t -v "$(pwd)/zap-report:/zap/wrk" zaproxy/zap-stable  zap-baseline.py -t http://host.docker.internal:7070 -a -m 5 -r report.html
+
+with rules:
+docker run --rm -t -v "$(pwd)/zap-report:/zap/wrk" zaproxy/zap-stable  zap-baseline.py -t http://host.docker.internal:7070 -a -m 5 -r report.html -c rules.tsv
+* remember to run the app first!
