@@ -36,7 +36,7 @@
 10049	IGNORE	(Content Cacheability)
 10050	IGNORE	(Retrieved from Cache)
 10052	IGNORE	(X-ChromeLogger-Data (XCOLD) Header Information Leak)
-10054	IGNORE	(Cookie without SameSite Attribute)
+10054	FAIL	(Cookie without SameSite Attribute)
 10055	IGNORE	(CSP)
 10056	IGNORE	(X-Debug-Token Information Leak)
 10057	IGNORE	(Username Hash Found)
