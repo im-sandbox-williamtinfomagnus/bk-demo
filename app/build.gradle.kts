@@ -22,7 +22,7 @@ dependencies {
     
     // Deprecated library with known vulnerabilities for Dependabot testing
     implementation("log4j:log4j:1.2.17")
-    implementation("commons-collections:commons-collections:3.2.1")
+    implementation("commons-collections:commons-collections:3.2.2")
 }
 
 testing {
