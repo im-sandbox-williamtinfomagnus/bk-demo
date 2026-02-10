@@ -5,7 +5,7 @@ COPY . .
 RUN chmod +x ./gradlew && ./gradlew build
 
 # Stage 2: Runtime (INTENTIONALLY VULNERABLE)
-FROM ubuntu:18.04
+FROM ubuntu:22.04
 
 WORKDIR /app
 
