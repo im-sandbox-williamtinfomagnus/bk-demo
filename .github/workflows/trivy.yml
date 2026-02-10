@@ -27,7 +27,14 @@ jobs:
         with:
           image-ref: my-app:latest
           scan-ref: '.'
-          format: table
           exit-code: "1"
           vuln-type: 'os,library,image,fs,repo'
           severity: "CRITICAL,HIGH,MEDIUM"
+          format: sarif
+          output: 'trivy-results.sarif'
+
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: 'trivy-results.sarif'
