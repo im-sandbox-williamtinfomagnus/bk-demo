@@ -28,7 +28,7 @@ jobs:
           image-ref: my-app:latest
           scan-ref: '.'
           exit-code: "1"
-          vuln-type: 'os,library,image,fs,repo'
+          vuln-type: 'os,library'
           severity: "CRITICAL,HIGH,MEDIUM"
           format: sarif
           output: 'trivy-results.sarif'
