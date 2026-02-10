@@ -39,3 +39,9 @@ docker run --rm -t -v "$(pwd)/zap-report:/zap/wrk" zaproxy/zap-stable  zap-basel
 with rules:
 docker run --rm -t -v "$(pwd)/zap-report:/zap/wrk" zaproxy/zap-stable  zap-baseline.py -t http://host.docker.internal:7070 -a -m 5 -r report.html -c rules.tsv
 * remember to run the app first!
+
+
+------
+
+add package management
+- put package into container registry
