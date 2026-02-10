@@ -26,7 +26,8 @@ jobs:
         uses: aquasecurity/trivy-action@0.24.0
         with:
           image-ref: my-app:latest
+          scan-ref: '.'
           format: table
           exit-code: "1"
-          vuln-type: 'os,library'
+          vuln-type: 'os,library,image,fs,repo'
           severity: "CRITICAL,HIGH,MEDIUM"
