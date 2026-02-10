@@ -30,8 +30,7 @@ jobs:
           exit-code: "1"
           vuln-type: 'os,library'
           severity: "CRITICAL,HIGH,MEDIUM"
-          format: sarif
-          output: 'trivy-results.sarif'
+          format: table
 
 
       # - name: Upload Trivy scan results to GitHub Security tab
