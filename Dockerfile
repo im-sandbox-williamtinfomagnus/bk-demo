@@ -1,5 +1,5 @@
 # Stage 1: Builds
-FROM eclipse-temurin:25-jdk AS build
+FROM eclipse-temurin:11-jdk AS build
 WORKDIR /app
 COPY . .
 RUN chmod +x ./gradlew && ./gradlew build
@@ -9,8 +9,8 @@ FROM ubuntu:22.04
 
 WORKDIR /app
 
-# Install Java 8 (vulnerable version)
-RUN apt-get update && apt-get install -y openjdk-8-jre-headless && rm -rf /var/lib/apt/lists/*
+# Install Java 11 (vulnerable version)
+RUN apt-get update && apt-get install -y openjdk-11-jre-headless && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /app/app/build/libs/app.jar app.jar
 
