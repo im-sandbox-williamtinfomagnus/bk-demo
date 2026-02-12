@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM eclipse-temurin:21-jdk AS build
+FROM eclipse-temurin:25-jdk AS build
 WORKDIR /app
 COPY . .
 RUN chmod +x ./gradlew && ./gradlew build
