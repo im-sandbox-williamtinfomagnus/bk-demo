@@ -45,3 +45,8 @@ docker run --rm -t -v "$(pwd)/zap-report:/zap/wrk" zaproxy/zap-stable  zap-basel
 
 add package management
 - put package into container registry
+
+
+------
+
+to run trivy locally
