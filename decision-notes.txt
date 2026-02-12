@@ -1,4 +1,4 @@
------- tool for SCA
+------ tool for SCA.
 
 https://github.com/actions/dependency-review-action
 
