@@ -50,3 +50,5 @@ add package management
 ------
 
 to run trivy locally
+
+trivy image gcr.io/distroless/java21-debian12

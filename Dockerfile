@@ -5,7 +5,7 @@ COPY . .
 RUN chmod +x ./gradlew && ./gradlew build
 
 # Stage 2: Runtime
-FROM gcr.io/distroless/java21-debian12
+FROM chainguard/jre:latest
 WORKDIR /app
 COPY --from=build /app/app/build/libs/app.jar app.jar
 EXPOSE 7070
