@@ -52,3 +52,8 @@ add package management
 to run trivy locally
 
 trivy image gcr.io/distroless/java21-debian12
+
+------
+
+for the trivy run, we rebuild the image. ideally, we should use the image we pushed to
+ the registry, but it didn't work for me.
