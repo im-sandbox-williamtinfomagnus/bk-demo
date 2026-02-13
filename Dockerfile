@@ -9,4 +9,4 @@ FROM chainguard/jre:latest
 WORKDIR /app
 COPY --from=build /app/app/build/libs/app.jar app.jar
 EXPOSE 7070
-CMD ["app.jar"]
+CMD ["java", "-jar", "app.jar"]

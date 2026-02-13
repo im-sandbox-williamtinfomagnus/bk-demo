@@ -82,6 +82,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Clean up any existing containers
+        run: |
+          docker container stop demo 2>/dev/null || true
+          docker container rm demo 2>/dev/null || true
+
       - name: Run app
         run: |
           docker run -d -p 7070:7070 --name demo ghcr.io/${{ github.repository }}:latest
@@ -95,6 +100,11 @@ jobs:
               break
             fi
             echo "Attempt $i/30: Application not ready yet, waiting 10 seconds..."
+            # Show logs every 5 attempts to help with debugging
+            if [ $((i % 5)) -eq 0 ]; then
+              echo "Container logs (attempt $i):"
+              docker logs demo --tail 20
+            fi
             sleep 10
           done
           
@@ -103,6 +113,8 @@ jobs:
             echo "Application failed to start after 5 minutes"
             echo "Docker logs:"
             docker logs demo
+            echo "Container status:"
+            docker ps -a --filter name=demo
             exit 1
           fi
           
@@ -127,6 +139,12 @@ jobs:
           issue_title: 'ZAP Scan Baseline Report'
           allow_issue_writing: false
           artifact_name: 'zap_scan'
+
+      - name: Clean up containers
+        if: always()
+        run: |
+          docker container stop demo 2>/dev/null || true
+          docker container rm demo 2>/dev/null || true
 
 
   trivy-scan:
