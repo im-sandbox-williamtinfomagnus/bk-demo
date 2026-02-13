@@ -75,3 +75,12 @@ FROM eclipse-temurin:25-jre
 because the chainguard one might have some dependencies missing (it is very minimal, doesn't even come with 'ls').
 The initial reason why I chose chainguard/jre at first is because it is very minimal and will not
 have any vulnerabilities flagged by trivy.
+
+Using eclipse-temurin fiexed the issues for DAST, but Trivy is broken now.
+
+os_version="24.04"
+Total: 10 (MEDIUM: 10, HIGH: 0, CRITICAL: 0)
+
+Java (jar)
+Total: 8 (MEDIUM: 0, HIGH: 4, CRITICAL: 4)
+
