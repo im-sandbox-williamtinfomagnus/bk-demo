@@ -59,6 +59,10 @@ public class App {
         server.createContext("/", new GreetingHandler());
         server.createContext("/robots.txt", new RobotsHandler());
         server.createContext("/sitemap.xml", new SitemapHandler());
+        server.createContext("/admin", new AdminHandler());
+        server.createContext("/insecure", new InsecureHandler());
+        server.createContext("/error", new ErrorDisclosureHandler());
+        server.createContext("/login", new InsecureCookieHandler()); // New insecure cookie endpoint
         server.setExecutor(null); // use the default executor
         return server;
     }
@@ -91,6 +95,10 @@ public class App {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             byte[] response = new App().getGreeting().getBytes(StandardCharsets.UTF_8);
+            
+            // VULNERABILITY: Set landing page cookie without SameSite attribute
+            exchange.getResponseHeaders().add("Set-Cookie", "landingVisit=true; Path=/; Max-Age=3600");
+            
             exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
             // Dynamic content should not be cached
             exchange.getResponseHeaders().set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
@@ -204,7 +212,7 @@ public class App {
             
             // Set default cookie if not present
             if (cookieHeader == null || !cookieHeader.contains("user=")) {
-                exchange.getResponseHeaders().set("Set-Cookie", "user=member; Path=/; HttpOnly; SameSite=Strict");
+                exchange.getResponseHeaders().set("Set-Cookie", "user=member; Path=/; HttpOnly");
             }
             
             exchange.getResponseHeaders().set("Content-Type", "text/html; charset=utf-8");
@@ -334,6 +342,71 @@ public class App {
             return errorHtml.toString();
         }
     }
+
+    // VULNERABILITY: Cookies without SameSite Attribute [ZAP-10054]
+    // This handler sets cookies without the SameSite attribute, making them vulnerable to CSRF attacks
+    private static class InsecureCookieHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            String method = exchange.getRequestMethod();
+            String query = exchange.getRequestURI().getQuery();
+            String response;
+            
+            if ("POST".equals(method)) {
+                // Simulate login process - set session cookies WITHOUT SameSite attribute
+                response = "<!DOCTYPE html><html><head><title>Login Successful</title></head>" +
+                        "<body>" +
+                        "<h1>✅ Login Successful!</h1>" +
+                        "<p>Welcome! Your session has been created.</p>" +
+                        "<p><a href='/login'>Go back to login</a></p>" +
+                        "</body></html>";
+                
+                // VULNERABILITY: Setting cookies without SameSite attribute
+                // These cookies are vulnerable to CSRF attacks since they will be sent with cross-site requests
+                exchange.getResponseHeaders().add("Set-Cookie", "sessionId=abc123xyz; Path=/; HttpOnly"); // Missing SameSite
+                exchange.getResponseHeaders().add("Set-Cookie", "userId=12345; Path=/"); // Missing SameSite AND HttpOnly
+                exchange.getResponseHeaders().add("Set-Cookie", "preferences=theme=dark; Path=/; Max-Age=86400"); // Missing SameSite
+                exchange.getResponseHeaders().add("Set-Cookie", "csrf_token=vulnerable_token; Path=/"); // Ironic - CSRF token without SameSite protection
+                
+            } else {
+                // Show login form
+                response = "<!DOCTYPE html><html><head><title>Login Page</title></head>" +
+                        "<body>" +
+                        "<h1>🔐 Login</h1>" +
+                        "<p>This login page sets cookies without SameSite attributes, making them vulnerable to CSRF attacks.</p>" +
+                        "<form method='POST'>" +
+                        "<div style='margin: 10px 0;'>" +
+                        "<label>Username: <input type='text' name='username' required></label>" +
+                        "</div>" +
+                        "<div style='margin: 10px 0;'>" +
+                        "<label>Password: <input type='password' name='password' required></label>" +
+                        "</div>" +
+                        "<button type='submit'>Login</button>" +
+                        "</form>" +
+                        "<br>" +
+                        "<p><strong>Vulnerability:</strong> This page sets cookies without the SameSite attribute.</p>" +
+                        "<p>Cookies without SameSite are sent with cross-site requests, enabling CSRF attacks.</p>" +
+                        "</body></html>";
+                        
+                // Also set a tracking cookie when user visits the login page
+                exchange.getResponseHeaders().add("Set-Cookie", "tracking=visitor_" + System.currentTimeMillis() + "; Path=/"); // Missing SameSite
+            }
+            
+            byte[] responseBytes = response.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "text/html; charset=utf-8");
+            // Login page should not be cached
+            exchange.getResponseHeaders().set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+            exchange.getResponseHeaders().set("Pragma", "no-cache");
+            exchange.getResponseHeaders().set("Expires", "0");
+            addSecurityHeaders(exchange);
+            
+            exchange.sendResponseHeaders(200, responseBytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(responseBytes);
+            }
+        }
+    }
+
     // Handler for robots.txt
     private static class RobotsHandler implements HttpHandler {
         @Override
