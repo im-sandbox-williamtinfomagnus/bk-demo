@@ -53,4 +53,9 @@ tasks.jar {
             "Main-Class" to "org.example.App"
         )
     }
+    // Create a fat JAR with all dependencies
+    from({
+        configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
+    })
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

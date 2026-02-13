@@ -64,3 +64,14 @@ for the trivy run, we rebuild the image. ideally, we should use the image we pus
 for tomorrow (February 13th)
 
 - make sure the DAST and Trivy are passing
+
+------
+
+I changed from 
+FROM chainguard/jre:latest
+to 
+FROM eclipse-temurin:25-jre
+
+because the chainguard one might have some dependencies missing (it is very minimal, doesn't even come with 'ls').
+The initial reason why I chose chainguard/jre at first is because it is very minimal and will not
+have any vulnerabilities flagged by trivy.
