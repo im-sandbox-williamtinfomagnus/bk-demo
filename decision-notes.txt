@@ -84,3 +84,6 @@ Total: 10 (MEDIUM: 10, HIGH: 0, CRITICAL: 0)
 Java (jar)
 Total: 8 (MEDIUM: 0, HIGH: 4, CRITICAL: 4)
 
+- ignore all os vulnerabilities
+- fixed jar vulnerabilities by upgrading to a safe version.
+- for the PR, we can make it fail later by using an unsafe version.

@@ -20,9 +20,10 @@ dependencies {
     // This dependency is used by the application.
     implementation(libs.guava)
     
-    // Deprecated library with known vulnerabilities for Dependabot testing
-    implementation("log4j:log4j:1.2.17")
-    implementation("commons-collections:commons-collections:3.2.1")
+    // Updated to secure log4j2 version
+    implementation("org.apache.logging.log4j:log4j-core:2.21.1")
+    implementation("org.apache.logging.log4j:log4j-api:2.21.1")
+    implementation("commons-collections:commons-collections:3.2.2")
 }
 
 testing {
