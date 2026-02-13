@@ -50,7 +50,17 @@ jobs:
           context: .
           push: true
           no-cache: true
-          tags: ghcr.io/${{ github.repository }}:latest
+          tags: |
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+      - name: Publish image info
+        run: |
+          echo "## 🐳 Docker Image" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Registry:** ghcr.io" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** ghcr.io/${{ github.repository }}:${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Latest:** ghcr.io/${{ github.repository }}:latest" >> $GITHUB_STEP_SUMMARY
 
   sca-scan:
     name: Dependency Vulnerability Scan (SCA)
