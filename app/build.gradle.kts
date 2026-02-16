@@ -21,8 +21,8 @@ dependencies {
     implementation(libs.guava)
     
     // Updated to secure log4j2 version
-    implementation("org.apache.logging.log4j:log4j-core:2.21.1")
-    implementation("org.apache.logging.log4j:log4j-api:2.21.1")
+    implementation("org.apache.logging.log4j:log4j-core:2.25.3")
+    implementation("org.apache.logging.log4j:log4j-api:2.25.3")
     implementation("commons-collections:commons-collections:3.2.2")
 }
 
